@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Manager</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Mode Toggle Button -->
+    <div class="mode-toggle" id="mode-toggle">
+      <i class="fas fa-moon"></i>
+    </div>
+    
+    <!-- Welcome Screen (Layout 1) -->
+    <div id="welcome-screen" class="screen active">
+      <div class="welcome-container fade-in">
+        <div class="welcome-logo">
+          <i class="fas fa-database"></i>
+        </div>
+        <h1>Welcome to Database Manager</h1>
+        <p>A powerful tool to connect, manage, and query your databases with a modern interface and advanced features</p>
+        <button id="connect-btn" class="primary-btn"><i class="fas fa-plug"></i> Let's Connect</button>
+        
+        <div class="welcome-features">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-server"></i>
+            </div>
+            <h3>Multiple Databases</h3>
+            <p>Connect to MySQL, PostgreSQL, and SQLite databases</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-code"></i>
+            </div>
+            <h3>SQL Editor</h3>
+            <p>Write and execute SQL queries with syntax highlighting</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-table"></i>
+            </div>
+            <h3>Data Browser</h3>
+            <p>Browse and manage your database tables with ease</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connection Screen (Layout 2) - Horizontal Format -->
+    <div id="connection-screen" class="screen">
+      <div class="connection-container-horizontal fade-in">
+        <h2><i class="fas fa-plug"></i> Connect to Database</h2>
+        <form id="connection-form">
+          <div class="connection-form-grid">
+            <!-- Left Column - Connection Details -->
+            <div class="connection-details">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="db-type"><i class="fas fa-database"></i> Database Type</label>
+                  <select id="db-type" required>
+                    <option value="mysql">MySQL</option>
+                    <option value="postgresql">PostgreSQL</option>
+                    <option value="sqlite">SQLite</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="host"><i class="fas fa-server"></i> Host</label>
+                  <input type="text" id="host" placeholder="localhost" required>
+                  <small id="host-help" class="form-text">For SQLite, enter the file path</small>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group" id="port-group">
+                  <label for="port"><i class="fas fa-network-wired"></i> Port</label>
+                  <input type="text" id="port" placeholder="3306">
+                </div>
+                
+                <div class="form-group" id="username-group">
+                  <label for="username"><i class="fas fa-user"></i> Username</label>
+                  <input type="text" id="username" placeholder="root">
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group" id="password-group">
+                  <label for="password"><i class="fas fa-lock"></i> Password</label>
+                  <input type="password" id="password">
+                </div>
+                
+                <div class="form-group">
+                  <label for="profile-name"><i class="fas fa-bookmark"></i> Profile Name</label>
+                  <input type="text" id="profile-name" placeholder="My Connection">
+                </div>
+              </div>
+              
+              <div class="form-group checkbox">
+                <input type="checkbox" id="remember-credentials">
+                <label for="remember-credentials"><i class="fas fa-save"></i> Remember credentials</label>
+              </div>
+            </div>
+            
+            <!-- Right Column - Saved Profiles -->
+            <div class="saved-profiles-panel">
+              <h3><i class="fas fa-history"></i> Saved Profiles</h3>
+              <select id="profile-list" class="profile-select">
+                <option value="">Select a profile...</option>
+              </select>
+              <div class="profile-actions">
+                <button type="button" id="save-profile-btn" class="secondary-btn"><i class="fas fa-save"></i> Save</button>
+                <button type="button" id="load-profile-btn" class="secondary-btn"><i class="fas fa-download"></i> Load</button>
+              </div>
+              <div class="connection-tips">
+                <h4><i class="fas fa-lightbulb"></i> Quick Tips</h4>
+                <ul>
+                  <li>For MySQL, default port is 3306</li>
+                  <li>For PostgreSQL, default port is 5432</li>
+                  <li>For SQLite, enter the full file path</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" id="back-to-welcome-btn" class="secondary-btn"><i class="fas fa-arrow-left"></i> Back</button>
+            <button type="submit" class="primary-btn"><i class="fas fa-plug"></i> Connect</button>
+          </div>
+        </form>
+        <div id="connection-error" class="error-message"></div>
+      </div>
+    </div>
+
+    <!-- Database and Table Browser (Layout 3) -->
+    <div id="browser-screen" class="screen">
+      <div class="browser-container">
+        <div class="sidebar fade-in">
+          <div class="sidebar-header">
+            <h2><i class="fas fa-database"></i> Databases</h2>
+            <button id="back-to-connection-btn" class="secondary-btn"><i class="fas fa-arrow-left"></i></button>
+          </div>
+          
+          <div class="sidebar-search">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="database-search" placeholder="Search databases...">
+          </div>
+          
+          <div class="sidebar-section">
+            <h3><i class="fas fa-server"></i> DATABASES</h3>
+            <div id="database-container" class="database-container">
+              <!-- Database items will be added here dynamically -->
+            </div>
+          </div>
+          
+          <div class="connection-info">
+            <div class="connection-status">
+              <span class="status-indicator connected"></span>
+              <span id="connection-name">Connected</span>
+            </div>
+            <button id="disconnect-btn" class="secondary-btn"><i class="fas fa-power-off"></i> Disconnect</button>
+          </div>
+        </div>
+        
+        <div class="main-content fade-in">
+          <!-- AI SQL Assistant for Browser Screen -->
+          <div class="ai-assistant-panel card">
+            <div class="panel-header">
+              <h3><i class="fas fa-robot"></i> AI SQL Assistant</h3>
+              <div class="panel-actions">
+                <button id="browser-clear-nl-query-btn" class="secondary-btn"><i class="fas fa-eraser"></i></button>
+                <button id="browser-toggle-ai-assistant-btn" class="secondary-btn"><i class="fas fa-chevron-up"></i></button>
+              </div>
+            </div>
+            
+            <div class="browser-ai-assistant-content">
+              <p class="assistant-description">Describe what you want to query in plain English, and I'll generate the SQL for you.</p>
+              
+              <div class="nl-query-container">
+                <textarea id="browser-nl-query-input" placeholder="e.g., Show me the top 10 products by sales in the last 30 days"></textarea>
+                <button id="browser-generate-sql-btn" class="primary-btn"><i class="fas fa-magic"></i> Generate SQL</button>
+              </div>
+              
+              <div id="browser-ai-status" class="ai-status">
+                <div class="loading-indicator hidden">
+                  <i class="fas fa-spinner fa-spin"></i> Generating SQL...
+                </div>
+                <div id="browser-ai-error" class="error-message"></div>
+                <div id="browser-ai-result" class="ai-result hidden">
+                  <div class="result-header">
+                    <h4>Generated SQL:</h4>
+                    <button id="browser-copy-sql-btn" class="secondary-btn small-btn"><i class="fas fa-copy"></i> Copy</button>
+                  </div>
+                  <pre id="browser-ai-sql-display"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="browser-query-panel" class="browser-query-panel card">
+            <div class="panel-header">
+              <h3><i class="fas fa-terminal"></i> Quick SQL Query</h3>
+              <div class="panel-actions">
+                <button id="clear-query-btn" class="secondary-btn"><i class="fas fa-eraser"></i></button>
+                <button id="open-query-btn" class="secondary-btn"><i class="fas fa-expand-alt"></i></button>
+              </div>
+            </div>
+            
+            <div class="sql-shortcut-buttons">
+              <button id="sql-select-btn" class="sql-btn">SELECT</button>
+              <button id="sql-insert-btn" class="sql-btn">INSERT</button>
+              <button id="sql-update-btn" class="sql-btn">UPDATE</button>
+              <button id="sql-delete-btn" class="sql-btn">DELETE</button>
+              <button id="sql-alter-btn" class="sql-btn">ALTER</button>
+              <button id="sql-create-btn" class="sql-btn">CREATE</button>
+            </div>
+            
+            <div class="query-input-container">
+              <textarea id="browser-query-input" placeholder="Enter your SQL query here..."></textarea>
+              <button id="browser-run-query-btn" class="primary-btn"><i class="fas fa-play"></i> Execute</button>
+            </div>
+            
+            <div id="browser-query-results">
+              <div class="results-header">
+                <h4><i class="fas fa-table"></i> Results</h4>
+                <div class="results-actions">
+                  <button id="browser-export-csv-btn" class="secondary-btn" disabled><i class="fas fa-file-csv"></i> Export CSV</button>
+                  <button id="browser-export-excel-btn" class="secondary-btn" disabled><i class="fas fa-file-excel"></i> Export Excel</button>
+                  <button id="browser-export-json-btn" class="secondary-btn" disabled><i class="fas fa-file-code"></i> Export JSON</button>
+              </div>
+              </div>
+              
+              <div id="browser-results-table-container">
+                <table id="browser-results-table">
+                  <thead id="browser-results-header"></thead>
+                  <tbody id="browser-results-body"></tbody>
+                </table>
+              </div>
+              
+              <div id="browser-query-error" class="error-message"></div>
+            </div>
+          </div>
+          
+          <div id="table-info" class="card">
+            <div class="panel-header">
+              <h2 id="selected-table"><i class="fas fa-table"></i> No Table Selected</h2>
+              <div class="table-actions">
+                <button id="refresh-table-btn" class="secondary-btn"><i class="fas fa-sync-alt"></i></button>
+                <button id="toggle-table-details-btn" class="secondary-btn"><i class="fas fa-chevron-up"></i></button>
+              </div>
+            </div>
+            
+            <div id="table-schema">
+              <h3><i class="fas fa-columns"></i> Schema</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Column</th>
+                    <th>Type</th>
+                    <th>Nullable</th>
+                    <th>Default</th>
+                    <th>Extra</th>
+                  </tr>
+                </thead>
+                <tbody id="schema-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQL Query Console (Layout 4) -->
+    <div id="query-screen" class="screen">
+      <div class="query-container fade-in">
+        <!-- AI SQL Assistant -->
+        <div class="ai-assistant-panel card">
+          <div class="panel-header">
+            <h2><i class="fas fa-robot"></i> AI SQL Assistant</h2>
+            <div class="panel-actions">
+              <button id="clear-nl-query-btn" class="secondary-btn"><i class="fas fa-eraser"></i></button>
+              <button id="toggle-ai-assistant-btn" class="secondary-btn"><i class="fas fa-chevron-up"></i></button>
+            </div>
+          </div>
+          
+          <div class="ai-assistant-content">
+            <p class="assistant-description">Describe what you want to query in plain English, and I'll generate the SQL for you.</p>
+            
+            <div class="nl-query-container">
+              <textarea id="nl-query-input" placeholder="e.g., Show me the top 10 products by sales in the last 30 days"></textarea>
+              <button id="generate-sql-btn" class="primary-btn"><i class="fas fa-magic"></i> Generate SQL</button>
+            </div>
+            
+            <div id="ai-status" class="ai-status">
+            <div class="loading-indicator hidden">
+              <i class="fas fa-spinner fa-spin"></i> Generating SQL...
+            </div>
+            <div id="ai-error" class="error-message"></div>
+            <div id="ai-result" class="ai-result hidden">
+              <div class="result-header">
+                <h4>Generated SQL:</h4>
+                <button id="copy-sql-btn" class="secondary-btn small-btn"><i class="fas fa-copy"></i> Copy</button>
+              </div>
+              <pre id="ai-sql-display"></pre>
+            </div>
+          </div>
+          </div>
+        </div>
+        
+        <div class="query-editor card">
+          <div class="panel-header">
+            <h2><i class="fas fa-terminal"></i> SQL Query Console</h2>
+            <div class="panel-actions">
+              <button id="clear-full-query-btn" class="secondary-btn"><i class="fas fa-eraser"></i></button>
+              <button id="save-query-btn" class="secondary-btn"><i class="fas fa-save"></i></button>
+            </div>
+          </div>
+          
+          <div class="sql-shortcut-buttons">
+            <button id="query-sql-select-btn" class="sql-btn">SELECT</button>
+            <button id="query-sql-insert-btn" class="sql-btn">INSERT</button>
+            <button id="query-sql-update-btn" class="sql-btn">UPDATE</button>
+            <button id="query-sql-delete-btn" class="sql-btn">DELETE</button>
+            <button id="query-sql-alter-btn" class="sql-btn">ALTER</button>
+            <button id="query-sql-create-btn" class="sql-btn">CREATE</button>
+          </div>
+          
+          <textarea id="query-input" placeholder="Enter your SQL query here..."></textarea>
+          
+          <div class="query-actions">
+            <button id="back-to-browser-btn" class="secondary-btn"><i class="fas fa-arrow-left"></i> Back to Browser</button>
+            <button id="run-query-btn" class="primary-btn"><i class="fas fa-play"></i> Run Query</button>
+          </div>
+        </div>
+        
+        <div class="query-results card">
+          <div class="results-header">
+            <h3><i class="fas fa-table"></i> Results</h3>
+            <div class="results-meta">
+              <span id="results-count" class="results-count">0 rows</span>
+              <span id="query-time" class="query-time">0 ms</span>
+            </div>
+            <div class="export-buttons">
+              <button id="export-csv-btn" class="secondary-btn" disabled><i class="fas fa-file-csv"></i> Export CSV</button>
+              <button id="export-excel-btn" class="secondary-btn" disabled><i class="fas fa-file-excel"></i> Export Excel</button>
+              <button id="export-json-btn" class="secondary-btn" disabled><i class="fas fa-file-code"></i> Export JSON</button>
+            </div>
+          </div>
+          
+          <div id="results-table-container">
+            <table id="results-table">
+              <thead id="results-header"></thead>
+              <tbody id="results-body"></tbody>
+            </table>
+          </div>
+          
+          <div id="query-error" class="error-message"></div>
+        </div>
+        
+
+      </div>
+    </div>
+  </div>
+
+  <script src="js/renderer.js"></script>
+</body>
+</html>
