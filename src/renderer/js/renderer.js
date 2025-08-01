@@ -630,6 +630,14 @@ document.getElementById('database-search').addEventListener('input', function() 
   const searchTerm = this.value.toLowerCase();
   const databaseItems = document.querySelectorAll('.database-item');
   
+  if (searchTerm === '') {
+    // If search is empty, show all databases
+    databaseItems.forEach(item => {
+      item.style.display = 'block';
+    });
+    return;
+  }
+  
   databaseItems.forEach(item => {
     const databaseName = item.querySelector('.database-name').textContent.toLowerCase();
     if (databaseName.includes(searchTerm)) {
@@ -670,6 +678,10 @@ async function loadDatabases() {
       databaseHeader.className = 'database-header';
       databaseHeader.addEventListener('click', () => toggleDatabase(database, databaseItem));
       
+      // Create database icon
+      const databaseIcon = document.createElement('i');
+      databaseIcon.className = 'fas fa-database';
+      
       // Create database name
       const databaseName = document.createElement('div');
       databaseName.className = 'database-name';
@@ -678,7 +690,7 @@ async function loadDatabases() {
       // Create toggle icon
       const databaseToggle = document.createElement('div');
       databaseToggle.className = 'database-toggle';
-      databaseToggle.innerHTML = '▶';
+      databaseToggle.innerHTML = '<i class="fas fa-chevron-right"></i>';
       
       // Create table container (initially hidden)
       const tableContainer = document.createElement('div');
@@ -686,6 +698,7 @@ async function loadDatabases() {
       tableContainer.dataset.database = database;
       
       // Assemble the components
+      databaseHeader.appendChild(databaseIcon);
       databaseHeader.appendChild(databaseName);
       databaseHeader.appendChild(databaseToggle);
       databaseItem.appendChild(databaseHeader);
@@ -734,33 +747,38 @@ async function toggleDatabase(database, databaseItem) {
     // Toggle tables visibility
     const isOpen = tableContainer.classList.contains('open');
     
-    if (!isOpen) {
-      // Close all other table containers
-      document.querySelectorAll('.table-container').forEach(container => {
+    // Close all other table containers
+    document.querySelectorAll('.table-container').forEach(container => {
+      if (container !== tableContainer) {
         container.classList.remove('open');
-      });
-      document.querySelectorAll('.database-toggle').forEach(toggle => {
+      }
+    });
+    document.querySelectorAll('.database-toggle').forEach(toggle => {
+      if (toggle !== databaseToggle) {
         toggle.classList.remove('open');
-      });
-      
+      }
+    });
+    
+    if (!isOpen) {
       // Open this table container
       tableContainer.classList.add('open');
       databaseToggle.classList.add('open');
       
-      // Load tables if not already loaded
-      if (tableContainer.children.length === 0) {
-        await loadTablesForDatabase(database, tableContainer);
-      }
+      // Always reload tables when opening a database
+      tableContainer.innerHTML = ''; // Clear existing tables
+      await loadTablesForDatabase(database, tableContainer);
     } else if (isSelected) {
       // If already open and selected, close it
       tableContainer.classList.remove('open');
       databaseToggle.classList.remove('open');
     } else {
-      // If already open but not selected, keep it open
-      // This happens when clicking a different database that's already open
+      // If already open but not selected, keep it open and refresh tables
+      tableContainer.innerHTML = ''; // Clear existing tables
+      await loadTablesForDatabase(database, tableContainer);
     }
   } catch (error) {
     console.error('Error toggling database:', error);
+    alert(`Error selecting database: ${error.message}`);
   }
 }
 
@@ -782,29 +800,76 @@ async function loadTablesForDatabase(database, tableContainer) {
       return;
     }
     
-    result.tables.forEach(table => {
-      const tableItem = document.createElement('div');
-      tableItem.className = 'table-item';
+    // Add table search input
+    const tableSearchContainer = document.createElement('div');
+    tableSearchContainer.className = 'table-search';
+    
+    const searchIcon = document.createElement('i');
+    searchIcon.className = 'fas fa-search search-icon';
+    
+    const tableSearchInput = document.createElement('input');
+    tableSearchInput.type = 'text';
+    tableSearchInput.placeholder = 'Search tables...';
+    tableSearchInput.className = 'table-search-input';
+    
+    tableSearchContainer.appendChild(searchIcon);
+    tableSearchContainer.appendChild(tableSearchInput);
+    tableContainer.appendChild(tableSearchContainer);
+    
+    // Create a container for table items
+    const tableItemsContainer = document.createElement('div');
+    tableItemsContainer.className = 'table-items-container';
+    tableContainer.appendChild(tableItemsContainer);
+    
+    // Store tables for search functionality
+    const tables = result.tables;
+    
+    // Function to render tables based on search
+    const renderTables = (searchTerm = '') => {
+      tableItemsContainer.innerHTML = '';
       
-      const tableIcon = document.createElement('i');
-      tableIcon.className = 'fas fa-table';
+      const filteredTables = searchTerm ? 
+        tables.filter(table => table.toLowerCase().includes(searchTerm.toLowerCase())) : 
+        tables;
       
-      const tableName = document.createElement('span');
-      tableName.textContent = table;
+      if (filteredTables.length === 0) {
+        tableItemsContainer.innerHTML = '<div class="empty-message"><i class="fas fa-search"></i><p>No matching tables found</p></div>';
+        return;
+      }
       
-      tableItem.appendChild(tableIcon);
-      tableItem.appendChild(tableName);
-      
-      tableItem.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent triggering database toggle
-        selectTable(table, tableItem);
+      filteredTables.forEach(table => {
+        const tableItem = document.createElement('div');
+        tableItem.className = 'table-item';
+        tableItem.dataset.tableName = table.toLowerCase();
+        
+        const tableIcon = document.createElement('i');
+        tableIcon.className = 'fas fa-table';
+        
+        const tableName = document.createElement('span');
+        tableName.textContent = table;
+        
+        tableItem.appendChild(tableIcon);
+        tableItem.appendChild(tableName);
+        
+        tableItem.addEventListener('click', (event) => {
+          event.stopPropagation(); // Prevent triggering database toggle
+          selectTable(table, tableItem);
+        });
+        
+        tableItemsContainer.appendChild(tableItem);
       });
-      
-      tableContainer.appendChild(tableItem);
+    };
+    
+    // Add event listener for table search
+    tableSearchInput.addEventListener('input', function() {
+      renderTables(this.value);
     });
+    
+    // Initial render of all tables
+    renderTables();
   } catch (error) {
     console.error('Error loading tables:', error);
-    tableContainer.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+    tableContainer.innerHTML = `<div class="error"><i class="fas fa-exclamation-triangle"></i><p>Error: ${error.message}</p></div>`;
   }
 }
 
